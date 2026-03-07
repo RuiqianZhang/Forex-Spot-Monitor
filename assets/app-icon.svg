@@ -1,0 +1,49 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="100" x2="900" y2="940" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0C1F3E"/>
+      <stop offset="0.48" stop-color="#146A8C"/>
+      <stop offset="1" stop-color="#35B79E"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="280" y1="220" x2="780" y2="860" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF4B0"/>
+      <stop offset="1" stop-color="#F8B73E"/>
+    </linearGradient>
+    <linearGradient id="bar1" x1="0" y1="680" x2="0" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF2A5"/>
+      <stop offset="1" stop-color="#FFD15A"/>
+    </linearGradient>
+    <linearGradient id="bar2" x1="0" y1="680" x2="0" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A4FFF3"/>
+      <stop offset="1" stop-color="#68F0DA"/>
+    </linearGradient>
+    <linearGradient id="bar3" x1="0" y1="680" x2="0" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D7F9FF"/>
+      <stop offset="1" stop-color="#8BE6FF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#071225" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <rect x="72" y="72" width="880" height="880" rx="214" fill="url(#bg)"/>
+  <circle cx="760" cy="252" r="168" fill="#8FFFF0" opacity="0.12"/>
+  <circle cx="312" cy="794" r="198" fill="#FFE180" opacity="0.12"/>
+
+  <g filter="url(#shadow)">
+    <rect x="220" y="248" width="584" height="528" rx="88" fill="#0A1930" opacity="0.28"/>
+    <rect x="248" y="278" width="528" height="472" rx="74" fill="#07172D" opacity="0.84"/>
+    <rect x="276" y="306" width="472" height="416" rx="58" fill="#0E2443"/>
+  </g>
+
+  <path d="M330 640C394 596 426 515 484 500C546 484 570 558 635 541C684 528 715 467 748 405" fill="none" stroke="url(#glow)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="748" cy="405" r="34" fill="#FFD768"/>
+  <circle cx="635" cy="541" r="24" fill="#FFD768" opacity="0.92"/>
+  <circle cx="484" cy="500" r="24" fill="#FFD768" opacity="0.92"/>
+
+  <rect x="334" y="570" width="72" height="118" rx="24" fill="url(#bar1)"/>
+  <rect x="452" y="494" width="72" height="194" rx="24" fill="url(#bar2)"/>
+  <rect x="570" y="432" width="72" height="256" rx="24" fill="url(#bar3)"/>
+
+  <path d="M314 724H710" stroke="#D3F7FF" stroke-width="22" stroke-linecap="round" opacity="0.92"/>
+</svg>

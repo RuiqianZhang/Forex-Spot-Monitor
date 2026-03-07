@@ -1,0 +1,129 @@
+{
+  "defaults": {
+    "provider": "swissquote",
+    "instrument": "XAU/USD"
+  },
+  "providers": [
+    {
+      "key": "sina",
+      "label": "新浪",
+      "request": {
+        "url_template": "https://hq.sinajs.cn/list={symbol}",
+        "headers": {
+          "Referer": "https://finance.sina.com.cn"
+        },
+        "impersonate": "chrome",
+        "timeout": 15,
+        "verify": false
+      },
+      "groups": [
+        {
+          "name": "主要货币对",
+          "instruments": [
+            {"label": "EUR/USD", "symbol": "EURUSD", "parser": {"type": "sina_forex"}},
+            {"label": "GBP/USD", "symbol": "GBPUSD", "parser": {"type": "sina_forex"}},
+            {"label": "AUD/USD", "symbol": "AUDUSD", "parser": {"type": "sina_forex"}},
+            {"label": "NZD/USD", "symbol": "NZDUSD", "parser": {"type": "sina_forex"}},
+            {"label": "USD/JPY", "symbol": "USDJPY", "parser": {"type": "sina_forex"}},
+            {"label": "USD/CHF", "symbol": "USDCHF", "parser": {"type": "sina_forex"}},
+            {"label": "USD/CAD", "symbol": "USDCAD", "parser": {"type": "sina_forex"}}
+          ]
+        },
+        {
+          "name": "交叉盘",
+          "instruments": [
+            {"label": "EUR/JPY", "symbol": "EURJPY", "parser": {"type": "sina_forex"}},
+            {"label": "GBP/JPY", "symbol": "GBPJPY", "parser": {"type": "sina_forex"}}
+          ]
+        },
+        {
+          "name": "人民币",
+          "instruments": [
+            {"label": "USD/CNY", "symbol": "USDCNY", "parser": {"type": "sina_forex"}}
+          ]
+        },
+        {
+          "name": "指数",
+          "instruments": [
+            {"label": "DXY", "symbol": "DINIW", "parser": {"type": "sina_forex"}}
+          ]
+        },
+        {
+          "name": "原油",
+          "instruments": [
+            {"label": "WTI", "symbol": "hf_CL", "parser": {"type": "sina_futures"}},
+            {"label": "BRENT", "symbol": "hf_OIL", "parser": {"type": "sina_futures"}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "swissquote",
+      "label": "Swissquote",
+      "request": {
+        "url_template": "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/{symbol}",
+        "headers": {
+          "Accept": "application/json"
+        },
+        "impersonate": "chrome",
+        "timeout": 15,
+        "verify": false
+      },
+      "groups": [
+        {
+          "name": "贵金属",
+          "instruments": [
+            {"label": "XAU/USD", "symbol": "XAU/USD", "parser": {"type": "swissquote_bbo"}},
+            {"label": "XAG/USD", "symbol": "XAG/USD", "parser": {"type": "swissquote_bbo"}}
+          ]
+        },
+        {
+          "name": "主要货币对",
+          "instruments": [
+            {"label": "EUR/USD", "symbol": "EUR/USD", "parser": {"type": "swissquote_bbo"}},
+            {"label": "GBP/USD", "symbol": "GBP/USD", "parser": {"type": "swissquote_bbo"}},
+            {"label": "AUD/USD", "symbol": "AUD/USD", "parser": {"type": "swissquote_bbo"}},
+            {"label": "NZD/USD", "symbol": "NZD/USD", "parser": {"type": "swissquote_bbo"}},
+            {"label": "USD/JPY", "symbol": "USD/JPY", "parser": {"type": "swissquote_bbo"}},
+            {"label": "USD/CHF", "symbol": "USD/CHF", "parser": {"type": "swissquote_bbo"}},
+            {"label": "USD/CAD", "symbol": "USD/CAD", "parser": {"type": "swissquote_bbo"}}
+          ]
+        },
+        {
+          "name": "交叉盘",
+          "instruments": [
+            {"label": "EUR/JPY", "symbol": "EUR/JPY", "parser": {"type": "swissquote_bbo"}},
+            {"label": "GBP/JPY", "symbol": "GBP/JPY", "parser": {"type": "swissquote_bbo"}}
+          ]
+        },
+        {
+          "name": "人民币",
+          "instruments": [
+            {"label": "USD/CNH", "symbol": "USD/CNH", "parser": {"type": "swissquote_bbo"}}
+          ]
+        }
+      ]
+    },
+    {
+      "key": "gold_api",
+      "label": "gold-api",
+      "request": {
+        "url_template": "https://api.gold-api.com/price/{symbol}",
+        "headers": {
+          "Accept": "application/json"
+        },
+        "impersonate": "chrome",
+        "timeout": 15,
+        "verify": false
+      },
+      "groups": [
+        {
+          "name": "贵金属",
+          "instruments": [
+            {"label": "XAU/USD", "symbol": "XAU", "parser": {"type": "gold_api_xau"}}
+          ]
+        }
+      ]
+    }
+  ]
+}
