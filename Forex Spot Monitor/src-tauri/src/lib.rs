@@ -132,12 +132,48 @@ pub fn run() {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
+                            #[cfg(target_os = "macos")]
+                            let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
                         }
                     }
                     _ => {}
                 })
                 .build(app)?;
+
+            // macOS: 通过 NSApp 原生接口设置程序坞图标
+            #[cfg(target_os = "macos")]
+            {
+                use std::path::PathBuf;
+                use objc2::AnyThread;
+                use objc2_app_kit::{NSApplication, NSImage};
+                use objc2_foundation::{NSString, MainThreadMarker};
+                let icon_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("icons/icon.icns");
+                if icon_path.exists() {
+                    unsafe {
+                        let path_str = icon_path.to_str().unwrap_or("");
+                        let ns_path = NSString::from_str(path_str);
+                        if let Some(image) = NSImage::initWithContentsOfFile(
+                            NSImage::alloc(),
+                            &ns_path
+                        ) {
+                            let mtm = MainThreadMarker::new().unwrap();
+                            let ns_app = NSApplication::sharedApplication(mtm);
+                            ns_app.setApplicationIconImage(Some(&image));
+                        }
+                    }
+                }
+            }
+
             Ok(())
+        })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                let _ = window.hide();
+                api.prevent_close();
+                #[cfg(target_os = "macos")]
+                let _ = window.app_handle().set_activation_policy(tauri::ActivationPolicy::Accessory);
+            }
+            _ => {}
         })
         .invoke_handler(tauri::generate_handler![get_config, save_config, test_fetch])
         .run(tauri::generate_context!())

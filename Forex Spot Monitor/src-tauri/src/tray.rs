@@ -106,6 +106,8 @@ pub fn handle_menu_event(
         if let Some(window) = app.get_webview_window("main") {
             let _ = window.show();
             let _ = window.set_focus();
+            #[cfg(target_os = "macos")]
+            let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
         }
     } else if id_str == "toggle_show_name" {
         let mut config = state.config.blocking_write();

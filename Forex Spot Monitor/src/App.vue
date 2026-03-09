@@ -8,7 +8,7 @@
     <div class="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#5856d6]/20 dark:bg-[#ff375f]/15 rounded-full blur-[100px] z-[-1] pointer-events-none"></div>
 
     <!-- 顶部控制栏 -->
-    <header class="flex-none pt-4 pb-2 px-6 flex flex-col items-center justify-center relative z-10 drop-shadow-sm"><h1 class="text-[14px] font-semibold mb-1.5 tracking-wide text-black/80 dark:text-white/90">{{ t('appTitle') }}</h1>
+    <header class="flex-none pt-4 pb-2 px-6 flex flex-col items-center justify-center relative z-10 drop-shadow-sm">
       <div class="flex items-center p-0.5 bg-black/[0.04] dark:bg-white/[0.08] backdrop-blur-2xl rounded-[8px] w-full max-w-[360px] shadow-inner ring-1 ring-black/[0.06] dark:ring-white/[0.1]">
         <button
           v-for="tab in ['providers', 'parsers', 'global']"
