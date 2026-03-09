@@ -99,10 +99,10 @@ impl AppState {
 
 pub fn spawn_daemon(app: AppHandle, state: Arc<AppState>) {
     tauri::async_runtime::spawn(async move {
-        let mut ticker = interval(Duration::from_secs(1));
         loop {
-            ticker.tick().await;
             let config = state.config.read().await.clone();
+            let interval_secs = config.defaults.refresh_interval.max(1);
+            tokio::time::sleep(Duration::from_secs(interval_secs)).await;
             
             // Just a placeholder structure - we will fill in the real 
             // fetching and parsing logic later.

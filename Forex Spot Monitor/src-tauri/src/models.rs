@@ -13,10 +13,16 @@ pub struct Defaults {
     pub instrument: String,
     #[serde(default = "default_show_instrument_name")]
     pub show_instrument_name: bool,
+    #[serde(default = "default_refresh_interval")]
+    pub refresh_interval: u64,
 }
 
 fn default_show_instrument_name() -> bool {
     true
+}
+
+fn default_refresh_interval() -> u64 {
+    1
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

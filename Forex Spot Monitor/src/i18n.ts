@@ -26,6 +26,8 @@ const messages: Record<Locale, Record<string, string>> = {
         // 通用设置
         showInstrumentName: '菜单栏显示品种名称',
         showInstrumentNameDesc: '开启后，系统菜单栏会显示品种的中文名称；关闭则只显示价格',
+        refreshInterval: '刷新频率',
+        refreshIntervalDesc: '系统托盘行情的数据更新间隔（秒）',
         language: '界面语言',
         languageDesc: '切换应用界面的显示语言',
 
@@ -111,6 +113,8 @@ const messages: Record<Locale, Record<string, string>> = {
         // 通用设置
         showInstrumentName: 'Show instrument name in menu bar',
         showInstrumentNameDesc: 'When enabled, the menu bar displays the instrument name alongside the price',
+        refreshInterval: 'Refresh Interval',
+        refreshIntervalDesc: 'Data update interval for the menu bar (in seconds)',
         language: 'Language',
         languageDesc: 'Switch the display language of the application',
 

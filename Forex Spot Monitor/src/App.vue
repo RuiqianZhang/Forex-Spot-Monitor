@@ -63,6 +63,19 @@
                   </select>
                 </div>
               </div>
+              <!-- 刷新频率 -->
+              <div class="mac-card">
+                <div class="mac-row flex justify-between items-center bg-white/30 dark:bg-black/20">
+                  <div>
+                    <div class="font-semibold text-zinc-800 dark:text-zinc-200">{{ t('refreshInterval') }}</div>
+                    <div class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">{{ t('refreshIntervalDesc') }}</div>
+                  </div>
+                  <div class="flex items-center space-x-1">
+                    <input type="number" min="1" max="60" v-model.number="config.defaults.refresh_interval" class="mac-input w-16 text-center font-bold text-[12px] h-7" />
+                    <span class="text-zinc-500 text-[11px] font-medium">s</span>
+                  </div>
+                </div>
+              </div>
               <!-- 菜单栏品种名称 -->
               <div class="mac-card">
                 <div class="mac-row flex justify-between items-center bg-white/30 dark:bg-black/20">
