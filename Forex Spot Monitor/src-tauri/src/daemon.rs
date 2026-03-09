@@ -10,55 +10,71 @@ use tauri::image;
 
 fn get_trend_icon(change: f64) -> Option<tauri::image::Image<'static>> {
     if change.abs() < f64::EPSILON {
-        return None; 
+        return None;
     }
-    
+
     let is_up = change > 0.0;
-    let mut rgba = vec![0u8; 16 * 16 * 4];
-    
-    let (r, g, b, a) = if is_up {
-        (52u8, 199u8, 89u8, 255u8) // System Green
+    let size: usize = 44;
+    let mut rgba = vec![0u8; size * size * 4];
+
+    let (r, g, b) = if is_up {
+        (52u8, 199u8, 89u8)
     } else {
-        (255u8, 59u8, 48u8, 255u8) // System Red
+        (255u8, 59u8, 48u8)
     };
 
-    // Draw arrow
-    for y in 2..14 {
-        for x in 2..14 {
-            let mut draw = false;
-            if is_up {
-                if x == 7 || x == 8 {
-                    if y >= 6 { draw = true; }
-                }
-                if y >= 2 && y <= 6 {
-                    let w = y - 2; 
-                    if (7 - w) <= x && x <= (8 + w) {
-                        draw = true;
-                    }
-                }
-            } else {
-                if x == 7 || x == 8 {
-                    if y <= 9 { draw = true; }
-                }
-                if y >= 9 && y <= 13 {
-                    let w = 13 - y;
-                    if (7 - w) <= x && x <= (8 + w) {
-                        draw = true;
-                    }
-                }
-            }
+    // 点到线段距离，端点自然形成圆弧 cap
+    let dist_seg = |px: f64, py: f64, ax: f64, ay: f64, bx: f64, by: f64| -> f64 {
+        let dx = bx - ax;
+        let dy = by - ay;
+        let len_sq = dx * dx + dy * dy;
+        if len_sq < 1e-10 {
+            return ((px - ax).powi(2) + (py - ay).powi(2)).sqrt();
+        }
+        let t = ((px - ax) * dx + (py - ay) * dy) / len_sq;
+        let t = t.clamp(0.0, 1.0);
+        ((px - (ax + t * dx)).powi(2) + (py - (ay + t * dy)).powi(2)).sqrt()
+    };
 
-            if draw {
-                let idx = (y * 16 + x) * 4;
-                rgba[idx] = r;
-                rgba[idx+1] = g;
-                rgba[idx+2] = b;
-                rgba[idx+3] = a;
+    // 箭头各点坐标（44x44 画布）
+    let cx = 22.0_f64;
+    // 上箭头 ↑：尖朝上；下箭头 ↓：尖朝下
+    let (tip_y, shaft_end_y, arm_end_y, arm_dx) = if is_up {
+        (9.0_f64, 35.0, 22.0, 11.0) // 竖杆从 y=9 到 y=35，箭头臂到 y=22 ±11
+    } else {
+        (35.0_f64, 9.0, 22.0, 11.0)
+    };
+
+    let stroke_r = 2.6; // 半线宽（决定线条粗细）
+    let soft = 0.9;     // 抗锯齿软化范围
+
+    for py in 0..size {
+        for px in 0..size {
+            let x = px as f64 + 0.5;
+            let y = py as f64 + 0.5;
+
+            // ① 竖杆
+            let d_shaft = dist_seg(x, y, cx, tip_y, cx, shaft_end_y);
+            // ② 左臂
+            let d_left  = dist_seg(x, y, cx, tip_y, cx - arm_dx, arm_end_y);
+            // ③ 右臂
+            let d_right = dist_seg(x, y, cx, tip_y, cx + arm_dx, arm_end_y);
+
+            let d = d_shaft.min(d_left).min(d_right);
+            let alpha = ((stroke_r + soft - d) / soft).clamp(0.0, 1.0);
+
+            if alpha > 0.0 {
+                let a = (alpha * 255.0) as u8;
+                let idx = (py * size + px) * 4;
+                rgba[idx]     = r;
+                rgba[idx + 1] = g;
+                rgba[idx + 2] = b;
+                rgba[idx + 3] = a;
             }
         }
     }
-    
-    Some(tauri::image::Image::new_owned(rgba, 16, 16))
+
+    Some(tauri::image::Image::new_owned(rgba, size as u32, size as u32))
 }
 
 pub struct AppState {
