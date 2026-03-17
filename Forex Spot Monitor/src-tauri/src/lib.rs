@@ -16,7 +16,7 @@ fn greet(name: &str) -> String {
 
 use crate::models::{AppConfig, Provider, TestResult, TestRequestPayload, TestResponsePayload};
 use std::sync::Arc;
-use rquest::Client;
+// 移除未使用的 rquest::Client 导入
 use std::collections::HashMap;
 
 #[tauri::command]
@@ -30,31 +30,17 @@ async fn test_fetch(
     symbol: String,
     state: tauri::State<'_, Arc<crate::daemon::AppState>>,
 ) -> Result<TestResult, String> {
-    let url = provider.request.url_template.replace("{symbol}", &symbol);
-    let method = provider.request.method.to_uppercase();
+    // 使用统一的构建请求逻辑
+    let req_builder = crate::daemon::build_request(&state.client, &provider, &symbol);
     
-    // Build request payload recording
+    // Build request payload recording for UI
     let req_payload = TestRequestPayload {
-        method: method.clone(),
-        url: url.clone(),
+        method: provider.request.method.to_uppercase(),
+        url: provider.request.url_template.replace("{symbol}", &symbol),
         headers: provider.request.headers.clone(),
         body: provider.request.body.as_ref().map(|v| serde_json::to_string_pretty(v).unwrap_or_default()),
     };
-
-    let mut req_builder = match method.as_str() {
-        "POST" => state.client.post(&url),
-        _ => state.client.get(&url),
-    };
-
-    for (k, v) in &provider.request.headers {
-        req_builder = req_builder.header(k, v);
-    }
-
-    if let Some(body) = &provider.request.body {
-        let body_str = serde_json::to_string(body).unwrap_or_default();
-        req_builder = req_builder.header("Content-Type", "application/json").body(body_str);
-    }
-
+    
     // Attempt request
     match req_builder.send().await {
         Ok(resp) => {

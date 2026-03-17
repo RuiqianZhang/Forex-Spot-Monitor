@@ -3479,6 +3479,7 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "serde",
+ "serde_json",
  "serde_urlencoded",
  "socket2 0.5.10",
  "sync_wrapper",

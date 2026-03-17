@@ -1,12 +1,42 @@
-use crate::models::{AppConfig, QuoteSnapshot};
+use crate::models::{AppConfig, QuoteSnapshot, Provider};
 use rquest::Client;
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tokio::time::{interval, Duration};
+use tokio::time::Duration;
 use tauri::AppHandle;
-use tauri::Manager;
-use tauri::image;
+
+pub fn build_request(
+    client: &Client,
+    provider: &Provider,
+    symbol: &str,
+) -> rquest::RequestBuilder {
+    let url = provider.request.url_template.replace("{symbol}", symbol);
+    let method = provider.request.method.to_uppercase();
+
+    let mut req_builder = match method.as_str() {
+        "POST" => client.post(&url),
+        _ => client.get(&url),
+    };
+
+    // 1. 设置 Headers
+    for (k, v) in &provider.request.headers {
+        req_builder = req_builder.header(k, v);
+    }
+
+    // 2. 设置 JSON Body
+    if let Some(body) = &provider.request.body {
+        req_builder = req_builder.json(body);
+    }
+
+    // 3. 移除不支持的 Impersonate (浏览器模拟) 逻辑以确保编译通过
+    // 如果后续需要该功能，需核实 rquest 5.1.0 的正确实现方式（通常在 ClientBuilder 级别）
+
+    // 4. 设置超时 (应用配置超时，兜底 30s)
+    let timeout_secs = if provider.request.timeout > 0.0 { provider.request.timeout } else { 15.0 };
+    req_builder = req_builder.timeout(Duration::from_secs_f64(timeout_secs.min(60.0)));
+
+    req_builder
+}
 
 fn get_trend_icon(change: f64) -> Option<tauri::image::Image<'static>> {
     if change.abs() < f64::EPSILON {
@@ -114,9 +144,10 @@ pub fn spawn_daemon(app: AppHandle, state: Arc<AppState>) {
             if let Some(provider) = config.providers.iter().find(|p| p.key == provider_key) {
                 if let Some(instrument) = provider.get_instruments().iter().find(|i| i.label == instrument_label) {
                     println!("Found provider and instrument, start fetching...");
-                    // Simulate fetching -> Real Fetching
-                    let url = provider.request.url_template.replace("{symbol}", &instrument.symbol);
-                    match state.client.get(&url).send().await {
+
+                    let req_builder = build_request(&state.client, provider, &instrument.symbol);
+                    
+                    match req_builder.send().await {
                         Ok(resp) => {
                             match crate::parsers::parse_response(provider, instrument, resp).await {
                                 Ok(mut snapshot) => {
@@ -146,13 +177,11 @@ pub fn spawn_daemon(app: AppHandle, state: Arc<AppState>) {
                                             let icon = get_trend_icon(change);
                                             let _ = tray.set_icon(icon);
                                             if let Err(e) = tray.set_title(Some(title.clone())) {
-                                                println!("Failed to set MAC tray title: {:?}", e);
-                                            } else {
-                                                println!("Success set tray title to: {}", title);
+                                                eprintln!("Failed to set MAC tray title: {:?}", e);
                                             }
                                         }
                                         None => {
-                                            println!("Tray 'main' NOT FOUND! Cannot set title: {}", title);
+                                            eprintln!("Tray 'main' NOT FOUND!");
                                         }
                                     }
                                 }
@@ -162,7 +191,7 @@ pub fn spawn_daemon(app: AppHandle, state: Arc<AppState>) {
                             }
                         }
                         Err(e) => {
-                            eprintln!("请求网络接口时遇到错误: {e:?}");
+                            eprintln!("请求网络接口时遇到错误 (超时或连接中断): {e:?}");
                         }
                     }
                 }

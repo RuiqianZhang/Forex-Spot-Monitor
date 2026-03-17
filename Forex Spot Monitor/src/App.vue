@@ -390,6 +390,17 @@ const loadConfig = async () => {
       }
     }
     updateJsonStrings();
+    // 初始化选中的索引
+    const initialProviderIndex = config.value.providers.findIndex((p: any) => p.key === config.value.defaults.provider);
+    if (initialProviderIndex !== -1) {
+      selectedParserProviderIndex.value = initialProviderIndex;
+      const provider = config.value.providers[initialProviderIndex];
+      const instruments = provider.instruments || [];
+      const initialInstrumentIndex = instruments.findIndex((i: any) => i.label === config.value.defaults.instrument);
+      if (initialInstrumentIndex !== -1) {
+        selectedParserInstrumentIndex.value = initialInstrumentIndex;
+      }
+    }
   } catch (err: any) {
     showToast("Failed to load: " + err, 'error');
   } finally {
@@ -411,16 +422,37 @@ const saveConfig = async () => {
   }
 };
 
-watch(selectedProviderIndex, updateJsonStrings);
-watch(activeTab, () => {
+watch(selectedParserProviderIndex, (newVal) => {
+  if (config.value.providers[newVal]) {
+    config.value.defaults.provider = config.value.providers[newVal].key;
+    // 重置品种索引时，也更新 defaults.instrument 为新品种的第一个
+    const firstInst = config.value.providers[newVal].instruments?.[0];
+    if (firstInst) {
+      config.value.defaults.instrument = firstInst.label;
+    }
+    saveConfig();
+  }
   updateJsonStrings();
-  testSymbol.value = activeTab.value === 'parsers' && currentInstrument.value ? currentInstrument.value.symbol : 'default';
 });
 
-watch(selectedParserInstrumentIndex, () => {
-   if (activeTab.value === 'parsers' && currentInstrument.value) {
-       testSymbol.value = currentInstrument.value.symbol;
-   }
+watch(selectedParserInstrumentIndex, (newVal) => {
+  const inst = currentParserProvider.value?.instruments?.[newVal];
+  if (inst) {
+    config.value.defaults.instrument = inst.label;
+    if (activeTab.value === 'parsers') {
+      testSymbol.value = inst.symbol;
+    }
+    saveConfig();
+  }
+});
+
+watch(activeTab, () => {
+  updateJsonStrings();
+  if (activeTab.value === 'parsers' && currentInstrument.value) {
+    testSymbol.value = currentInstrument.value.symbol;
+  } else {
+    testSymbol.value = 'default';
+  }
 });
 
 function updateJsonStrings() {
