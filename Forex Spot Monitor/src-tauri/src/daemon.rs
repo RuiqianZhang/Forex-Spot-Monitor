@@ -39,15 +39,15 @@ pub fn build_request(
 }
 
 fn get_trend_icon(change: f64) -> Option<tauri::image::Image<'static>> {
-    if change.abs() < f64::EPSILON {
-        return None;
-    }
+    let is_none = change.abs() < f64::EPSILON;
 
     let is_up = change > 0.0;
-    let size: usize = 44;
+    let size: usize = 32;
     let mut rgba = vec![0u8; size * size * 4];
 
-    let (r, g, b) = if is_up {
+    let (r, g, b) = if is_none {
+        (0u8, 0u8, 0u8) // Transparent, color doesn't matter
+    } else if is_up {
         (52u8, 199u8, 89u8)
     } else {
         (255u8, 59u8, 48u8)
@@ -66,17 +66,17 @@ fn get_trend_icon(change: f64) -> Option<tauri::image::Image<'static>> {
         ((px - (ax + t * dx)).powi(2) + (py - (ay + t * dy)).powi(2)).sqrt()
     };
 
-    // 箭头各点坐标（44x44 画布）
-    let cx = 22.0_f64;
+    // 箭头各点坐标（32x32 画布，确保内容完整显示的同时最大限度靠右）
+    let cx = 20.0_f64; 
     // 上箭头 ↑：尖朝上；下箭头 ↓：尖朝下
     let (tip_y, shaft_end_y, arm_end_y, arm_dx) = if is_up {
-        (9.0_f64, 35.0, 22.0, 11.0) // 竖杆从 y=9 到 y=35，箭头臂到 y=22 ±11
+        (6.0_f64, 26.0, 16.0, 8.0) 
     } else {
-        (35.0_f64, 9.0, 22.0, 11.0)
+        (26.0_f64, 6.0, 16.0, 8.0)
     };
 
-    let stroke_r = 2.6; // 半线宽（决定线条粗细）
-    let soft = 0.9;     // 抗锯齿软化范围
+    let stroke_r = 1.3; // Thinner arrow for better aesthetic
+    let soft = 0.8;     // Sharper anti-aliasing
 
     for py in 0..size {
         for px in 0..size {
@@ -90,7 +90,7 @@ fn get_trend_icon(change: f64) -> Option<tauri::image::Image<'static>> {
             // ③ 右臂
             let d_right = dist_seg(x, y, cx, tip_y, cx + arm_dx, arm_end_y);
 
-            let d = d_shaft.min(d_left).min(d_right);
+            let d = if is_none { 100.0 } else { d_shaft.min(d_left).min(d_right) };
             let alpha = ((stroke_r + soft - d) / soft).clamp(0.0, 1.0);
 
             if alpha > 0.0 {
@@ -163,10 +163,12 @@ pub fn spawn_daemon(app: AppHandle, state: Arc<AppState>) {
                                     }
                                     
                                     let change = snapshot.change_value.unwrap_or(0.0);
+                                    // Remove all padding to achieve maximum closeness with the icon
+                                    let price_str = format!("{:.2}", snapshot.price);
                                     let title = if config.defaults.show_instrument_name {
-                                        format!("{} {:.2}", instrument.label, snapshot.price)
+                                        format!("{} {}", instrument.label, price_str)
                                     } else {
-                                        format!("{:.2}", snapshot.price)
+                                        price_str
                                     };
 
                                     latest_map.insert(cache_key, snapshot);
